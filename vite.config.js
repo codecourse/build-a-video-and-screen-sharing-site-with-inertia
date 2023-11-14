@@ -7,6 +7,7 @@ export default defineConfig({
         laravel({
             input: 'resources/js/app.js',
             refresh: true,
+            detectTls: 'videoshare.test'
         }),
         vue({
             template: {
