@@ -13,7 +13,17 @@ const player = ref(null)
 
 const captureWebcam = () => {
     navigator.mediaDevices.getUserMedia({
-        video: true
+        video: true,
+        audio: false
+    }).then((stream) => {
+        state.stream = stream
+    })
+}
+
+const captureScreen = () => {
+    navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false
     }).then((stream) => {
         state.stream = stream
     })
@@ -40,6 +50,10 @@ watch(() => state.stream, (stream) => {
                         <div class="flex items-center justify-center space-x-4" v-if="!state.streamActive">
                             <PrimaryButton v-on:click="captureWebcam">
                                 Capture webcam
+                            </PrimaryButton>
+
+                            <PrimaryButton v-on:click="captureScreen">
+                                Capture screen
                             </PrimaryButton>
                         </div>
 
