@@ -5,9 +5,11 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import Textarea from '@/Components/Textarea.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref, reactive, computed, watch } from 'vue'
+import dayjs from 'dayjs'
 
 const state = reactive({
     stream: null,
@@ -28,6 +30,7 @@ const form = useForm({
 const player = ref(null)
 const videoPreview = ref(null)
 const shouldCaptureAudio = ref(true)
+const currentDate = computed(() => dayjs().format('YYYY-MM-DD'))
 
 const startRecording = () => {
     let chunks = []
@@ -117,6 +120,9 @@ watch(() => state.blob, (blob) => {
     form.video = new File([blob], 'video.mp4', {
         type: 'video/mp4'
     })
+
+    form.title = currentDate.value
+    form.description = `A video captured on ${currentDate.value}`
 })
 </script>
 
@@ -140,7 +146,7 @@ watch(() => state.blob, (blob) => {
 
                             <div>
                                 <InputLabel for="description" value="Description" />
-                                <TextInput id="description" type="text" class="mt-1 block w-full" v-model="form.description" />
+                                <Textarea id="description" type="text" class="mt-1 block w-full" v-model="form.description" />
                                 <InputError class="mt-2" :message="form.errors.description" />
                             </div>
 
