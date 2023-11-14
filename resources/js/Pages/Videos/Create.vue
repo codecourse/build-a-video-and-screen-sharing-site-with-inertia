@@ -1,5 +1,6 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
+import DangerButton from '@/Components/DangerButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
@@ -8,11 +9,44 @@ import { ref, reactive, computed, watch } from 'vue'
 const state = reactive({
     stream: null,
     audioStream: null,
-    streamActive: computed(() => state.stream?.active)
+    recorder: null,
+    streamActive: computed(() => state.stream?.active),
+    isRecording: computed(() => state.recorder ? state.recorder.state === 'recording' : false),
 })
 
 const player = ref(null)
 const shouldCaptureAudio = ref(true)
+
+const startRecording = () => {
+    const chunks = []
+
+    const stream = new MediaStream([
+        ...state.stream.getTracks(),
+        ...(state.audioStream ? state.audioStream.getTracks() : [])
+    ])
+
+    state.recorder = new MediaRecorder(stream)
+
+    state.recorder.ondataavailable = event => {
+        if (!event.data || event.data.size <= 0) {
+            return
+        }
+
+        chunks.push(event.data)
+    }
+
+    state.recorder.onstop = () => {
+        console.log(chunks)
+    }
+
+    state.recorder.start(300)
+}
+
+const stopRecording = () => {
+    state.recorder.stream.getTracks().forEach(track => track.stop())
+    state.stream = null
+    state.recorder = null
+}
 
 const captureAudio = () => {
     navigator.mediaDevices.getUserMedia({
@@ -68,8 +102,18 @@ watch(() => state.stream, (stream) => {
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
 
-                        <div v-show="state.streamActive">
+                        <div v-show="state.streamActive" class="space-y-6">
                             <video ref="player" autoplay></video>
+
+                            <div class="flex justify-center">
+                                <PrimaryButton v-on:click="startRecording" v-if="!state.isRecording">
+                                    Start recording
+                                </PrimaryButton>
+
+                                <DangerButton v-on:click="stopRecording" v-if="state.isRecording">
+                                    Stop recording
+                                </DangerButton>
+                            </div>
                         </div>
 
                         <div class="flex items-center justify-center space-x-4" v-if="!state.streamActive">
