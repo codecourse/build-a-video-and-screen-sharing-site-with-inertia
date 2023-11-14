@@ -10,15 +10,18 @@ const state = reactive({
     stream: null,
     audioStream: null,
     recorder: null,
+    blob: null,
+    blobUrl: computed(() => state.blob ? URL.createObjectURL(state.blob) : null),
     streamActive: computed(() => state.stream?.active),
     isRecording: computed(() => state.recorder ? state.recorder.state === 'recording' : false),
 })
 
 const player = ref(null)
+const videoPreview = ref(null)
 const shouldCaptureAudio = ref(true)
 
 const startRecording = () => {
-    const chunks = []
+    let chunks = []
 
     const stream = new MediaStream([
         ...state.stream.getTracks(),
@@ -36,7 +39,13 @@ const startRecording = () => {
     }
 
     state.recorder.onstop = () => {
-        console.log(chunks)
+        const blob = new Blob(chunks, {
+            type: 'video/mp4'
+        })
+
+        state.blob = blob
+
+        chunks = []
     }
 
     state.recorder.start(300)
@@ -90,6 +99,10 @@ const captureScreen = () => {
 watch(() => state.stream, (stream) => {
     player.value.srcObject = stream
 })
+
+watch(() => state.blobUrl, (url) => {
+    videoPreview.value.src = url
+})
 </script>
 
 <template>
@@ -97,40 +110,43 @@ watch(() => state.stream, (stream) => {
 
     <AuthenticatedLayout>
         <div class="py-12">
-            {{ state }}
             <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
+                        <div v-show="state.blobUrl">
+                            <video controls ref="videoPreview"></video>
+                        </div>
 
-                        <div v-show="state.streamActive" class="space-y-6">
-                            <video ref="player" autoplay></video>
+                        <div v-show="!state.blobUrl">
+                            <div v-show="state.streamActive" class="space-y-6">
+                                <video ref="player" autoplay></video>
 
-                            <div class="flex justify-center">
-                                <PrimaryButton v-on:click="startRecording" v-if="!state.isRecording">
-                                    Start recording
+                                <div class="flex justify-center">
+                                    <PrimaryButton v-on:click="startRecording" v-if="!state.isRecording">
+                                        Start recording
+                                    </PrimaryButton>
+
+                                    <DangerButton v-on:click="stopRecording" v-if="state.isRecording">
+                                        Stop recording
+                                    </DangerButton>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-center space-x-4" v-if="!state.streamActive">
+                                <PrimaryButton v-on:click="captureWebcam">
+                                    Capture webcam
                                 </PrimaryButton>
 
-                                <DangerButton v-on:click="stopRecording" v-if="state.isRecording">
-                                    Stop recording
-                                </DangerButton>
+                                <PrimaryButton v-on:click="captureScreen">
+                                    Capture screen
+                                </PrimaryButton>
+
+                                <div class="space-x-2 flex items-center">
+                                    <Checkbox id="audio" v-model:checked="shouldCaptureAudio" />
+                                    <label for="audio" class="font-medium text-sm">Enable audio</label>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="flex items-center justify-center space-x-4" v-if="!state.streamActive">
-                            <PrimaryButton v-on:click="captureWebcam">
-                                Capture webcam
-                            </PrimaryButton>
-
-                            <PrimaryButton v-on:click="captureScreen">
-                                Capture screen
-                            </PrimaryButton>
-
-                            <div class="space-x-2 flex items-center">
-                                <Checkbox id="audio" v-model:checked="shouldCaptureAudio" />
-                                <label for="audio" class="font-medium text-sm">Enable audio</label>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
