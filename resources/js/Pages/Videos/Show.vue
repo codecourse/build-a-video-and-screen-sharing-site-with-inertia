@@ -20,7 +20,15 @@ const form = useForm({
 <template>
     <AuthenticatedLayout>
         <div class="py-12">
-            <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <InputLabel for="share_url" value="Share link" />
+                        <input type="text" v-bind:value="video.share_url" readonly class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full mt-1" v-on:click="$event.target.select()">
+                    </div>
+                </div>
+
+
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <form class="space-y-6" v-on:submit.prevent="form.patch(route('videos.update', video), { preserveScroll: true })">

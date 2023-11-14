@@ -22,6 +22,7 @@ class VideoResource extends JsonResource
             'still_path' => $this->still_path,
             'video_path' => $this->video_path,
             'created_at' => $this->created_at->toDateTimeString(),
+            'share_url' => route('videos.view', $this)
         ];
     }
 }

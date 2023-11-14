@@ -7,6 +7,7 @@ use App\Http\Controllers\VideoIndexController;
 use App\Http\Controllers\VideoShowController;
 use App\Http\Controllers\VideoStoreController;
 use App\Http\Controllers\VideoUpdateController;
+use App\Http\Controllers\VideoViewController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,6 +24,8 @@ use Inertia\Inertia;
 */
 
 Route::get('/', HomeController::class)->name('home');
+
+Route::get('/view/{video:uuid}', VideoViewController::class)->name('videos.view');
 
 Route::middleware('auth')->group(function () {
     Route::get('/videos', VideoIndexController::class)->name('videos.index');
