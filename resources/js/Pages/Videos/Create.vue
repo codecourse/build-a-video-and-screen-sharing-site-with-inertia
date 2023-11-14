@@ -1,9 +1,12 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
 import DangerButton from '@/Components/DangerButton.vue';
+import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { ref, reactive, computed, watch } from 'vue'
 
 const state = reactive({
@@ -14,6 +17,12 @@ const state = reactive({
     blobUrl: computed(() => state.blob ? URL.createObjectURL(state.blob) : null),
     streamActive: computed(() => state.stream?.active),
     isRecording: computed(() => state.recorder ? state.recorder.state === 'recording' : false),
+})
+
+const form = useForm({
+    title: '',
+    description: '',
+    video: null
 })
 
 const player = ref(null)
@@ -103,6 +112,12 @@ watch(() => state.stream, (stream) => {
 watch(() => state.blobUrl, (url) => {
     videoPreview.value.src = url
 })
+
+watch(() => state.blob, (blob) => {
+    form.video = new File([blob], 'video.mp4', {
+        type: 'video/mp4'
+    })
+})
 </script>
 
 <template>
@@ -113,9 +128,26 @@ watch(() => state.blobUrl, (url) => {
             <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <div v-show="state.blobUrl">
+                        <form v-show="state.blobUrl" class="space-y-6">
+                            {{ form }}
                             <video controls ref="videoPreview"></video>
-                        </div>
+
+                            <div>
+                                <InputLabel for="title" value="Title" />
+                                <TextInput id="title" type="text" class="mt-1 block w-full" v-model="form.title" />
+                                <InputError class="mt-2" :message="form.errors.title" />
+                            </div>
+
+                            <div>
+                                <InputLabel for="description" value="Description" />
+                                <TextInput id="description" type="text" class="mt-1 block w-full" v-model="form.description" />
+                                <InputError class="mt-2" :message="form.errors.description" />
+                            </div>
+
+                            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                                Save video
+                            </PrimaryButton>
+                        </form>
 
                         <div v-show="!state.blobUrl">
                             <div v-show="state.streamActive" class="space-y-6">
