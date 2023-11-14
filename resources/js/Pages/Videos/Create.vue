@@ -134,8 +134,7 @@ watch(() => state.blob, (blob) => {
             <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <form v-show="state.blobUrl" class="space-y-6">
-                            {{ form }}
+                        <form v-show="state.blobUrl" class="space-y-6" v-on:submit.prevent="form.post(route('videos.store'), { preserveScroll: true })">
                             <video controls ref="videoPreview"></video>
 
                             <div>
